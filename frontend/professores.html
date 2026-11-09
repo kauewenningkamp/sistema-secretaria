@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professores | SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sistema.css') }}">
+</head>
+<body>
+    <div class="sige-app">
+
+        <aside class="barra-lateral">
+            <div class="marca-sige">
+                <div class="marca-icone">S</div>
+                <div>
+                    <h1>SIGE</h1>
+                    <p>Gestão de equipamentos</p>
+                </div>
+            </div>
+    
+            <p class="menu-titulo">Menu principal</p>
+    
+            <nav class="menu-sige">
+                <a href="/painel">
+                    <span class="menu-icone">▦</span>
+                    Painel
+                </a>
+    
+                <a href="/professores" class="ativo">
+                    <span class="menu-icone">♙</span>
+                    Professores
+                </a>
+    
+                <a href="/turmas">
+                    <span class="menu-icone">▤</span>
+                    Turmas
+                </a>
+    
+                <a href="/equipamentos">
+                    <span class="menu-icone">▣</span>
+                    Equipamentos
+                </a>
+    
+                <a href="/emprestimos">
+                    <span class="menu-icone">⇄</span>
+                    Empréstimos
+                </a>
+    
+                <a href="/devolucoes">
+                    <span class="menu-icone">✓</span>
+                    Devoluções
+                </a>
+    
+                <a href="/historico">
+                    <span class="menu-icone">▧</span>
+                    Histórico
+                </a>
+            </nav>
+    
+            <div class="lateral-rodape">
+                Escola São Cristóvão<br>
+                Sistema interno da Secretaria
+            </div>
+        </aside>
+    
+        <main class="conteudo-sistema">
+
+            <header class="topo-pagina">
+                <div>
+                    <h2>Professores</h2>
+                    <p>Cadastre e consulte os professores da escola.</p>
+                </div>
+
+                <div class="acoes-topo">
+                    <a href="/painel" class="botao-secundario">‹ Voltar ao painel</a>
+                    <a href="/login" class="botao-sair">↪ Sair</a>
+                </div>
+            </header>
+
+            <section class="cartao-conteudo">
+                <h3>Cadastrar professor</h3>
+                <p class="texto-ajuda">
+                    Informe o nome completo do professor para adicioná-lo ao sistema.
+                </p>
+
+                <form id="formProfessor" class="formulario-sige">
+                    <div class="grupo-campo">
+                        <label for="nomeProfessor">Nome do professor</label>
+                        <input
+                            type="text"
+                            id="nomeProfessor"
+                            placeholder="Ex.: Maria da Silva"
+                            maxlength="100"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="botao-primario" id="botaoCadastrar">
+                        + Cadastrar professor
+                    </button>
+                </form>
+
+                <p id="mensagemProfessor" class="mensagem-status" role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="secao-sistema">
+                <div class="secao-cabecalho">
+                    <div>
+                        <h3>Professores cadastrados</h3>
+                        <p>Consulte os professores registrados no SIGE.</p>
+                    </div>
+                    <button type="button" class="botao-secundario" id="botaoAtualizar">
+                        ↻ Atualizar lista
+                    </button>
+                </div>
+
+                <div class="cartao-conteudo">
+                    <p id="estadoLista" class="estado" role="status" aria-live="polite">
+                        Carregando professores...
+                    </p>
+
+                    <div class="tabela-responsiva" id="areaTabela" hidden>
+                        <table class="tabela-sige">
+                            <thead>
+                                <tr>
+                                    <th>Nome do professor</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaProfessores"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="rodape-sistema">
+                SIGE — Sistema Integrado de Gestão de Equipamentos · Escola São Cristóvão
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        const formulario = document.getElementById("formProfessor");
+        const campoNome = document.getElementById("nomeProfessor");
+        const mensagem = document.getElementById("mensagemProfessor");
+        const lista = document.getElementById("listaProfessores");
+        const estadoLista = document.getElementById("estadoLista");
+        const areaTabela = document.getElementById("areaTabela");
+        const botaoCadastrar = document.getElementById("botaoCadastrar");
+        const botaoAtualizar = document.getElementById("botaoAtualizar");
+
+        function mostrarMensagem(texto, tipo) {
+            mensagem.textContent = texto;
+            mensagem.className = "mensagem-status" + (tipo ? " " + tipo : "");
+            mensagem.hidden = false;
+        }
+
+        async function carregarProfessores() {
+            estadoLista.hidden = false;
+            estadoLista.textContent = "Carregando professores...";
+            areaTabela.hidden = true;
+            botaoAtualizar.disabled = true;
+
+            try {
+                const resposta = await fetch("/api/professores");
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Não foi possível carregar os professores.");
+                }
+
+                lista.replaceChildren();
+
+                if (dados.length === 0) {
+                    estadoLista.textContent = "Nenhum professor cadastrado. Use o formulário acima para adicionar o primeiro.";
+                    return;
+                }
+
+                dados.forEach(professor => {
+                    const linha = document.createElement("tr");
+                    const celulaNome = document.createElement("td");
+                    const celulaSituacao = document.createElement("td");
+                    const etiqueta = document.createElement("span");
+
+                    celulaNome.textContent = professor.nome;
+
+                    etiqueta.textContent = professor.ativo ? "Ativo" : "Inativo";
+                    etiqueta.className = professor.ativo
+                        ? "badge-status"
+                        : "badge-status inativo";
+
+                    celulaSituacao.appendChild(etiqueta);
+                    linha.append(celulaNome, celulaSituacao);
+                    lista.appendChild(linha);
+                });
+
+                estadoLista.hidden = true;
+                areaTabela.hidden = false;
+
+            } catch (erro) {
+                estadoLista.textContent = erro.message;
+            } finally {
+                botaoAtualizar.disabled = false;
+            }
+        }
+
+        formulario.addEventListener("submit", async evento => {
+            evento.preventDefault();
+
+            const nome = campoNome.value.trim();
+
+            if (!nome) {
+                mostrarMensagem("Informe o nome do professor.", "erro");
+                campoNome.focus();
+                return;
+            }
+
+            botaoCadastrar.disabled = true;
+            botaoCadastrar.textContent = "Cadastrando...";
+            mensagem.hidden = true;
+
+            try {
+                const resposta = await fetch("/api/professores", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ nome })
+                });
+
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Não foi possível cadastrar o professor.");
+                }
+
+                mostrarMensagem(dados.mensagem || "Professor cadastrado com sucesso.", "sucesso");
+                campoNome.value = "";
+                await carregarProfessores();
+                campoNome.focus();
+
+            } catch (erro) {
+                mostrarMensagem(erro.message, "erro");
+            } finally {
+                botaoCadastrar.disabled = false;
+                botaoCadastrar.textContent = "+ Cadastrar professor";
+            }
+        });
+
+        botaoAtualizar.addEventListener("click", carregarProfessores);
+
+        carregarProfessores();
+    </script>
+</body>
+</html>

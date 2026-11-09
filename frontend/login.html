@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+
+    <header class="logo-sige">
+        <div class="icone-sige">S</div>
+        <div>
+            <h1>SIGE</h1>
+            <p>Sistema Integrado de<br>Gestão de Equipamentos</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="escola">
+            <div class="escudo">ESCOLA</div>
+            <h2>SÃO CRISTÓVÃO</h2>
+            <p class="lema">DISCIPLINA • RESPEITO • FUTURO</p>
+
+            <div class="linha"></div>
+
+            <p class="slogan">
+                Tecnologia a serviço de uma<br>
+                educação melhor.
+            </p>
+        </section>
+
+        <section class="cartao-login">
+            <a href="#" class="voltar">‹ Voltar</a>
+
+            <div class="icone-usuario">♟</div>
+
+            <h2>Login - Secretaria</h2>
+            <p class="descricao">
+                Gerencie equipamentos e empréstimos.
+            </p>
+
+            <form id="formLogin">
+                <label for="email">Usuário ou E-mail</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Digite seu e-mail"
+                    required
+                >
+
+                <label for="senha">Senha</label>
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Digite sua senha"
+                    required
+                >
+
+                <div class="opcoes">
+                    <label class="lembrar">
+                        <input type="checkbox" id="lembrar">
+                        Lembrar de mim
+                    </label>
+
+                    <a href="#" id="recuperarSenha">
+                        Esqueceu sua senha?
+                    </a>
+                </div>
+
+                <button type="submit">Entrar</button>
+            </form>
+
+            <p id="mensagem" role="status"></p>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
+

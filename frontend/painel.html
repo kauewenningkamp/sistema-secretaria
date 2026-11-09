@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel | SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sistema.css') }}">
+</head>
+<body>
+    <div class="sige-app">
+
+        <aside class="barra-lateral">
+            <div class="marca-sige">
+                <div class="marca-icone">S</div>
+                <div>
+                    <h1>SIGE</h1>
+                    <p>Gestão de equipamentos</p>
+                </div>
+            </div>
+
+            <p class="menu-titulo">Menu principal</p>
+
+            <nav class="menu-sige">
+                <a href="/painel" class="ativo">
+                    <span class="menu-icone">▦</span>
+                    Painel
+                </a>
+
+                <a href="/professores">
+                    <span class="menu-icone">♙</span>
+                    Professores
+                </a>
+
+                <a href="/turmas">
+                    <span class="menu-icone">▤</span>
+                    Turmas
+                </a>
+
+                <a href="/equipamentos">
+                    <span class="menu-icone">▣</span>
+                    Equipamentos
+                </a>
+                
+                <a href="/emprestimos">
+                    <span class="menu-icone">⇄</span>
+                    Empréstimos
+                </a>
+                
+                <a href="/devolucoes">
+                    <span class="menu-icone">✓</span>
+                    Devoluções
+                </a>
+
+                <a href="/historico">
+                    <span class="menu-icone">▧</span>
+                    Histórico
+                </a>
+            </nav>
+
+            <div class="lateral-rodape">
+                Escola São Cristóvão<br>
+                Sistema interno da Secretaria
+            </div>
+        </aside>
+
+        <main class="conteudo-sistema">
+
+            <header class="topo-pagina">
+                <div>
+                    <h2>Painel de controle</h2>
+                    <p>Acompanhe os equipamentos e empréstimos da escola.</p>
+                </div>
+
+                <div class="acoes-topo">
+                    <a href="/login" class="botao-sair">↪ Sair</a>
+                </div>
+            </header>
+
+            <section class="grade-indicadores">
+
+                <article class="cartao-indicador marinho">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Total de equipamentos</span>
+                        <span class="indicador-icone">▣</span>
+                    </div>
+                    <strong class="indicador-valor" id="totalEquipamentos">—</strong>
+                    <p class="indicador-descricao">Equipamentos cadastrados no sistema</p>
+                </article>
+
+                <article class="cartao-indicador">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Empréstimos ativos</span>
+                        <span class="indicador-icone">⇄</span>
+                    </div>
+                    <strong class="indicador-valor" id="emprestimosAtivos">—</strong>
+                    <p class="indicador-descricao">Empréstimos ainda não devolvidos</p>
+                </article>
+
+                <article class="cartao-indicador bordo">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Empréstimos atrasados</span>
+                        <span class="indicador-icone">!</span>
+                    </div>
+                    <strong class="indicador-valor" id="emprestimosAtrasados">—</strong>
+                    <p class="indicador-descricao">Empréstimos com prazo vencido</p>
+                </article>
+
+            </section>
+
+            <section class="secao-sistema">
+                <div class="secao-cabecalho">
+                    <div>
+                        <h3>Acesso rápido</h3>
+                        <p>Escolha uma área para continuar o trabalho.</p>
+                    </div>
+                </div>
+
+                <div class="atalhos-grid">
+
+                    <a href="/professores" class="cartao-atalho">
+                        <span class="atalho-icone">♙</span>
+                        <div>
+                            <h4>Professores</h4>
+                            <p>Cadastre e consulte os professores que utilizam os equipamentos.</p>
+                        </div>
+                    </a>
+
+                    <a href="/turmas" class="cartao-atalho">
+                        <span class="atalho-icone">▤</span>
+                        <div>
+                            <h4>Turmas</h4>
+                            <p>Cadastre e consulte as turmas da escola.</p>
+                        </div>
+                    </a>
+
+                    <a href="/equipamentos" class="cartao-atalho">
+                      <span class="atalho-icone marinho">▣</span>
+                        <div>
+                            <h4>Equipamentos</h4>
+                            <p>Gerencie tablets, fones de ouvido e Chromebooks.</p>
+                        </div>
+                    </a>
+
+                    <a href="/emprestimos" class="cartao-atalho">
+                        <span class="atalho-icone">⇄</span>
+                        <div>
+                            <h4>Empréstimos</h4>
+                            <p>Registre a retirada de equipamentos e os prazos de devolução.</p>
+                        </div>
+                    </a>
+
+                    <a href="/devolucoes" class="cartao-atalho">
+                        <span class="atalho-icone bordo">✓</span>
+                        <div>
+                            <h4>Devoluções</h4>
+                            <p>Consulte os empréstimos e registre os equipamentos devolvidos.</p>
+                        </div>
+                    </a>
+
+                    <a href="/historico" class="cartao-atalho">
+                        <span class="atalho-icone">▧</span>
+                        <div>
+                            <h4>Histórico</h4>
+                            <p>Consulte os empréstimos já devolvidos.</p>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+
+            <footer class="rodape-sistema">
+                SIGE — Sistema Integrado de Gestão de Equipamentos · Escola São Cristóvão
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        async function carregarPainel() {
+            const total = document.getElementById("totalEquipamentos");
+            const ativos = document.getElementById("emprestimosAtivos");
+            const atrasados = document.getElementById("emprestimosAtrasados");
+
+            try {
+                const resposta = await fetch("/api/painel");
+
+                if (!resposta.ok) {
+                    throw new Error("Não foi possível carregar os indicadores.");
+                }
+
+                const dados = await resposta.json();
+
+                total.textContent = dados.total_equipamentos;
+                ativos.textContent = dados.emprestimos_ativos;
+                atrasados.textContent = dados.emprestimos_atrasados;
+            } catch (erro) {
+                total.textContent = "—";
+                ativos.textContent = "—";
+                atrasados.textContent = "—";
+                console.error("Erro ao carregar painel:", erro);
+            }
+        }
+
+        carregarPainel();
+    </script>
+</body>
+</html>

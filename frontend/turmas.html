@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turmas | SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sistema.css') }}">
+</head>
+<body>
+    <div class="sige-app">
+        <aside class="barra-lateral">
+            <div class="marca-sige">
+                <div class="marca-icone">S</div>
+                <div>
+                    <h1>SIGE</h1>
+                    <p>Gestão de equipamentos</p>
+                </div>
+            </div>
+
+            <p class="menu-titulo">Menu principal</p>
+
+            <nav class="menu-sige">
+                <a href="/painel">
+                    <span class="menu-icone">▦</span>
+                    Painel
+                </a>
+            
+                <a href="/professores">
+                    <span class="menu-icone">♙</span>
+                    Professores
+                </a>
+            
+                <a href="/turmas" class="ativo">
+                    <span class="menu-icone">▤</span>
+                    Turmas
+                </a>
+            
+                <a href="/equipamentos">
+                    <span class="menu-icone">▣</span>
+                    Equipamentos
+                </a>
+            
+                <a href="/emprestimos">
+                    <span class="menu-icone">⇄</span>
+                    Empréstimos
+                </a>
+            
+                <a href="/devolucoes">
+                    <span class="menu-icone">✓</span>
+                    Devoluções
+                </a>
+            
+                <a href="/historico">
+                    <span class="menu-icone">▧</span>
+                    Histórico
+                </a>
+            </nav>
+
+            <div class="lateral-rodape">
+                Escola São Cristóvão<br>
+                Sistema interno da Secretaria
+            </div>
+        </aside>
+
+        <main class="conteudo-sistema">
+            <header class="topo-pagina">
+                <div>
+                    <h2>Turmas</h2>
+                    <p>Cadastre e organize as turmas da escola.</p>
+                </div>
+                <div class="acoes-topo">
+                    <a href="/painel" class="botao-secundario">‹ Voltar ao painel</a>
+                    <a href="/login" class="botao-sair">↪ Sair</a>
+                </div>
+            </header>
+
+            <section class="grade-indicadores">
+                <article class="cartao-indicador marinho">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Total de turmas</span>
+                        <span class="indicador-icone">▤</span>
+                    </div>
+                    <strong class="indicador-valor" id="totalTurmas">0</strong>
+                    <p class="indicador-descricao">Turmas cadastradas</p>
+                </article>
+
+                <article class="cartao-indicador">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Turmas ativas</span>
+                        <span class="indicador-icone">✓</span>
+                    </div>
+                    <strong class="indicador-valor" id="turmasAtivas">0</strong>
+                    <p class="indicador-descricao">Disponíveis para seleção</p>
+                </article>
+            </section>
+
+            <section class="cartao-conteudo">
+                <h3>Cadastrar turma</h3>
+                <p class="texto-ajuda">
+                    Você pode preencher o curso e o período agora ou posteriormente.
+                </p>
+
+                <form id="formTurma" class="formulario-sige">
+                    <div class="grupo-campo">
+                        <label for="nomeTurma">Nome da turma *</label>
+                        <input
+                            type="text"
+                            id="nomeTurma"
+                            maxlength="80"
+                            placeholder="Ex.: 1º A"
+                            required
+                        >
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="cursoTurma">Curso</label>
+                        <input
+                            type="text"
+                            id="cursoTurma"
+                            maxlength="100"
+                            placeholder="Ex.: Ensino Médio"
+                        >
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="periodoTurma">Período</label>
+                        <select id="periodoTurma">
+                            <option value="">Não informado</option>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="Noite">Noite</option>
+                            <option value="Integral">Integral</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="botao-primario" id="botaoCadastrar">
+                        + Cadastrar turma
+                    </button>
+                </form>
+
+                <p id="mensagemTurma" class="mensagem-status"
+                   role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="secao-sistema">
+                <div class="secao-cabecalho">
+                    <div>
+                        <h3>Turmas cadastradas</h3>
+                        <p>Consulte as turmas registradas no sistema.</p>
+                    </div>
+                    <button type="button" class="botao-secundario" id="botaoAtualizar">
+                        ↻ Atualizar lista
+                    </button>
+                </div>
+
+                <div class="cartao-conteudo">
+                    <p id="estadoLista" class="estado" role="status" aria-live="polite">
+                        Carregando turmas...
+                    </p>
+
+                    <div class="tabela-responsiva" id="areaTabela" hidden>
+                        <table class="tabela-sige">
+                            <thead>
+                                <tr>
+                                    <th>Nome da turma</th>
+                                    <th>Curso</th>
+                                    <th>Período</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaTurmas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="rodape-sistema">
+                SIGE — Sistema Integrado de Gestão de Equipamentos · Escola São Cristóvão
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        const formulario = document.getElementById("formTurma");
+        const nomeTurma = document.getElementById("nomeTurma");
+        const cursoTurma = document.getElementById("cursoTurma");
+        const periodoTurma = document.getElementById("periodoTurma");
+        const mensagem = document.getElementById("mensagemTurma");
+        const botaoCadastrar = document.getElementById("botaoCadastrar");
+        const botaoAtualizar = document.getElementById("botaoAtualizar");
+        const estadoLista = document.getElementById("estadoLista");
+        const areaTabela = document.getElementById("areaTabela");
+        const lista = document.getElementById("listaTurmas");
+
+        let turmas = [];
+
+        function mostrarMensagem(texto, tipo) {
+            mensagem.textContent = texto;
+            mensagem.className = "mensagem-status" + (tipo ? " " + tipo : "");
+            mensagem.hidden = false;
+        }
+
+        async function carregarTurmas() {
+            estadoLista.hidden = false;
+            estadoLista.textContent = "Carregando turmas...";
+            areaTabela.hidden = true;
+            botaoAtualizar.disabled = true;
+
+            try {
+                const resposta = await fetch("/api/turmas");
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Não foi possível carregar as turmas.");
+                }
+
+                turmas = dados;
+
+                document.getElementById("totalTurmas").textContent = turmas.length;
+                document.getElementById("turmasAtivas").textContent =
+                    turmas.filter(t => t.ativa === true || t.ativa === 1).length;
+
+                lista.replaceChildren();
+
+                if (turmas.length === 0) {
+                    estadoLista.textContent =
+                        "Nenhuma turma cadastrada. Utilize o formulário acima para adicionar a primeira.";
+                    return;
+                }
+
+                turmas.forEach(turma => {
+                    const linha = document.createElement("tr");
+                    const nome = document.createElement("td");
+                    const curso = document.createElement("td");
+                    const periodo = document.createElement("td");
+                    const situacao = document.createElement("td");
+                    const etiqueta = document.createElement("span");
+
+                    nome.textContent = turma.nome;
+                    curso.textContent = turma.curso || "—";
+                    periodo.textContent = turma.periodo || "—";
+                    etiqueta.textContent =
+                        (turma.ativa === true || turma.ativa === 1) ? "Ativa" : "Inativa";
+                    etiqueta.className = "badge-status";
+
+                    if (!(turma.ativa === true || turma.ativa === 1)) {
+                        etiqueta.classList.add("inativo");
+                    }
+
+                    situacao.appendChild(etiqueta);
+                    linha.append(nome, curso, periodo, situacao);
+                    lista.appendChild(linha);
+                });
+
+                estadoLista.hidden = true;
+                areaTabela.hidden = false;
+
+            } catch (erro) {
+                estadoLista.textContent = erro.message;
+                areaTabela.hidden = true;
+            } finally {
+                botaoAtualizar.disabled = false;
+            }
+        }
+
+        formulario.addEventListener("submit", async evento => {
+            evento.preventDefault();
+
+            const dados = {
+                nome: nomeTurma.value.trim(),
+                curso: cursoTurma.value.trim(),
+                periodo: periodoTurma.value
+            };
+
+            if (!dados.nome) {
+                mostrarMensagem("Informe o nome da turma.", "erro");
+                return;
+            }
+
+            botaoCadastrar.disabled = true;
+            botaoCadastrar.textContent = "Cadastrando...";
+            mensagem.hidden = true;
+
+            try {
+                const resposta = await fetch("/api/turmas", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(resultado.erro || "Não foi possível cadastrar a turma.");
+                }
+
+                mostrarMensagem(resultado.mensagem, "sucesso");
+                formulario.reset();
+                await carregarTurmas();
+                nomeTurma.focus();
+
+            } catch (erro) {
+                mostrarMensagem(erro.message, "erro");
+            } finally {
+                botaoCadastrar.disabled = false;
+                botaoCadastrar.textContent = "+ Cadastrar turma";
+            }
+        });
+
+        botaoAtualizar.addEventListener("click", carregarTurmas);
+
+        carregarTurmas();
+    </script>
+</body>
+</html>

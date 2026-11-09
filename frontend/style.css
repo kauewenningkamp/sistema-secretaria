@@ -1,0 +1,248 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #102e50;
+    background: linear-gradient(135deg, #f5fbfd, #eaf5f8);
+    padding: 35px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    width: 180px;
+    height: 18px;
+    background: #087f9f;
+    transform: rotate(-45deg);
+    z-index: -1;
+}
+
+body::before {
+    top: 35px;
+    left: -45px;
+    box-shadow: 0 28px 0 #720d3b;
+}
+
+body::after {
+    right: -45px;
+    bottom: 55px;
+    box-shadow: 0 28px 0 #720d3b;
+}
+
+.logo-sige {
+    position: absolute;
+    top: 30px;
+    right: 7%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.icone-sige {
+    width: 58px;
+    height: 58px;
+    border: 5px solid #087f9f;
+    border-right-color: #720d3b;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.logo-sige h1 {
+    font-size: 32px;
+}
+
+.logo-sige p {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.container {
+    max-width: 1200px;
+    min-height: 80vh;
+    margin: 100px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 50px;
+}
+
+.escola {
+    text-align: center;
+    padding: 25px;
+}
+
+.escudo {
+    width: 150px;
+    height: 170px;
+    margin: 0 auto 25px;
+    display: grid;
+    place-items: center;
+    border: 8px solid #087f9f;
+    border-right-color: #720d3b;
+    border-radius: 48% 48% 45% 45%;
+    font-size: 22px;
+    font-weight: bold;
+    color: #087f9f;
+}
+
+.escola h2 {
+    font-size: clamp(28px, 3vw, 43px);
+    font-weight: 800;
+}
+
+.lema {
+    margin-top: 12px;
+    color: #087f9f;
+    letter-spacing: 3px;
+    font-size: 13px;
+}
+
+.linha {
+    width: 70px;
+    height: 4px;
+    background: #087f9f;
+    margin: 65px 0 22px;
+}
+
+.slogan {
+    font-size: 23px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.cartao-login {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d7e8ee;
+    border-radius: 28px;
+    padding: 35px;
+    box-shadow: 0 8px 30px rgba(16, 46, 80, 0.10);
+}
+
+.voltar {
+    color: #087f9f;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.icone-usuario {
+    text-align: center;
+    color: #720d3b;
+    font-size: 55px;
+    margin-top: 15px;
+}
+
+.cartao-login h2 {
+    text-align: center;
+    font-size: 30px;
+    margin-top: 10px;
+}
+
+.descricao {
+    text-align: center;
+    color: #7884a1;
+    margin: 12px 0 30px;
+}
+
+form > label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 18px 0 8px;
+}
+
+form > input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #cbdfe6;
+    border-radius: 9px;
+    font-size: 16px;
+    outline-color: #087f9f;
+}
+
+.opcoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+    font-size: 14px;
+}
+
+.lembrar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.opcoes a {
+    color: #087f9f;
+    text-decoration: none;
+}
+
+button {
+    width: 100%;
+    padding: 17px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    background: linear-gradient(100deg, #0799b5, #08728f);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+button:hover {
+    filter: brightness(0.92);
+}
+
+#mensagem {
+    margin-top: 15px;
+    text-align: center;
+}
+
+@media (max-width: 800px) {
+    body {
+        padding: 20px;
+    }
+
+    .logo-sige {
+        position: static;
+        justify-content: center;
+        margin-bottom: 25px;
+    }
+
+    .container {
+        margin-top: 10px;
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .escola {
+        padding: 10px;
+    }
+
+    .escudo {
+        width: 100px;
+        height: 115px;
+    }
+
+    .linha {
+        margin-top: 25px;
+    }
+
+    .cartao-login {
+        padding: 25px;
+    }
+}
+

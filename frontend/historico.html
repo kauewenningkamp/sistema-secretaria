@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico | SIGE</title>
+    <link rel="stylesheet" href="/sistema.css">
+</head>
+<body>
+
+<div class="sige-app">
+
+    <aside class="barra-lateral">
+        <div class="marca-sige">
+            <div class="marca-icone">S</div>
+            <div>
+                <h1>SIGE</h1>
+                <p>Gestão de equipamentos</p>
+            </div>
+        </div>
+    
+        <p class="menu-titulo">Menu principal</p>
+    
+        <nav class="menu-sige">
+            <a href="/painel">
+                <span class="menu-icone">▦</span>
+                Painel
+            </a>
+    
+            <a href="/professores">
+                <span class="menu-icone">♙</span>
+                Professores
+            </a>
+    
+            <a href="/turmas">
+                <span class="menu-icone">▤</span>
+                Turmas
+            </a>
+    
+            <a href="/equipamentos">
+                <span class="menu-icone">▣</span>
+                Equipamentos
+            </a>
+    
+            <a href="/emprestimos">
+                <span class="menu-icone">⇄</span>
+                Empréstimos
+            </a>
+    
+            <a href="/devolucoes">
+                <span class="menu-icone">✓</span>
+                Devoluções
+            </a>
+    
+            <a href="/historico" class="ativo">
+                <span class="menu-icone">▧</span>
+                Histórico
+            </a>
+        </nav>
+    
+        <div class="lateral-rodape">
+            Escola São Cristóvão<br>
+            Sistema interno da Secretaria
+        </div>
+    </aside>
+
+    <main class="conteudo-sistema">
+
+        <header class="topo-pagina">
+            <div>
+                <h2>Histórico de devoluções</h2>
+                <p>Consulte todos os empréstimos que já foram devolvidos.</p>
+            </div>
+        
+            <div class="acoes-topo">
+                <a href="/painel" class="botao-secundario">
+                    ‹ Voltar ao painel
+                </a>
+            </div>
+        </header>
+
+        <section class="secao-sistema">
+            <div class="cartao-conteudo">
+                <div class="tabela-container">
+                    <table class="tabela-sige">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Professor</th>
+                                <th>Turma</th>
+                                <th>Equipamentos</th>
+                                <th>Quantidade</th>
+                                <th>Retirada</th>
+                                <th>Devolução realizada</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="listaHistorico">
+                            <tr>
+                                <td colspan="8">Carregando histórico...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    async function carregarHistorico() {
+        const lista = document.getElementById("listaHistorico");
+    
+        try {
+            const resposta = await fetch("/api/historico");
+            const dados = await resposta.json();
+    
+            if (!resposta.ok) {
+                throw new Error(dados.erro || "Não foi possível carregar o histórico.");
+            }
+    
+            lista.replaceChildren();
+    
+            if (dados.length === 0) {
+                const linha = document.createElement("tr");
+                const celula = document.createElement("td");
+    
+                celula.colSpan = 8;
+                celula.textContent = "Nenhuma devolução registrada.";
+    
+                linha.appendChild(celula);
+                lista.appendChild(linha);
+                return;
+            }
+    
+            dados.forEach(item => {
+                const linha = document.createElement("tr");
+    
+                const valores = [
+                    item.id_emprestimo,
+                    item.professor,
+                    item.turma,
+                    item.equipamentos,
+                    item.quantidade_equipamentos,
+                    item.data_emprestimo,
+                    item.data_devolucao,
+                    item.status
+                ];
+    
+                valores.forEach(valor => {
+                    const celula = document.createElement("td");
+                    celula.textContent = valor ?? "—";
+                    linha.appendChild(celula);
+                });
+    
+                lista.appendChild(linha);
+            });
+    
+        } catch (erro) {
+            lista.replaceChildren();
+    
+            const linha = document.createElement("tr");
+            const celula = document.createElement("td");
+    
+            celula.colSpan = 8;
+            celula.textContent = erro.message;
+    
+            linha.appendChild(celula);
+            lista.appendChild(linha);
+    
+            console.error("Erro ao carregar histórico:", erro);
+        }
+    }
+    
+    carregarHistorico();
+    </script>
+    </body>
+    </html>

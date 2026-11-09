@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devoluções | SIGE</title>
+    <link rel="stylesheet" href="/sistema.css">
+</head>
+<body>
+
+<div class="sige-app">
+
+    <aside class="barra-lateral">
+        <div class="marca-sige">
+            <div class="marca-icone">S</div>
+            <div>
+                <h1>SIGE</h1>
+                <p>Gestão de equipamentos</p>
+            </div>
+        </div>
+    
+        <p class="menu-titulo">Menu principal</p>
+    
+        <nav class="menu-sige">
+            <a href="/painel">
+                <span class="menu-icone">▦</span>
+                Painel
+            </a>
+    
+            <a href="/professores">
+                <span class="menu-icone">♙</span>
+                Professores
+            </a>
+    
+            <a href="/turmas">
+                <span class="menu-icone">▤</span>
+                Turmas
+            </a>
+    
+            <a href="/equipamentos">
+                <span class="menu-icone">▣</span>
+                Equipamentos
+            </a>
+    
+            <a href="/emprestimos">
+                <span class="menu-icone">⇄</span>
+                Empréstimos
+            </a>
+    
+            <a href="/devolucoes" class="ativo">
+                <span class="menu-icone">✓</span>
+                Devoluções
+            </a>
+    
+            <a href="/historico">
+                <span class="menu-icone">▧</span>
+                Histórico
+            </a>
+        </nav>
+    
+        <div class="lateral-rodape">
+            Escola São Cristóvão<br>
+            Sistema interno da Secretaria
+        </div>
+    </aside>
+
+    <main class="conteudo-sistema">
+
+        <header class="topo-pagina">
+            <div>
+                <h1>Devoluções</h1>
+                <p>Consulte os empréstimos que ainda precisam ser devolvidos.</p>
+            </div>
+        </header>
+
+        <section class="secao-sistema">
+            <div class="secao-cabecalho">
+                <div>
+                    <h3>Empréstimos pendentes</h3>
+                    <p>Todos os equipamentos de um empréstimo devem ser devolvidos juntos.</p>
+                </div>
+            </div>
+
+            <div class="cartao-conteudo">
+                <div class="tabela-container">
+                    <table class="tabela-sige">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Professor</th>
+                                <th>Turma</th>
+                                <th>Retirada</th>
+                                <th>Devolução prevista</th>
+                                <th>Equipamentos</th>
+                                <th>Status</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="listaDevolucoes">
+                            <tr>
+                                <td colspan="8" class="estado">
+                                    Carregando empréstimos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<script>
+    async function carregarDevolucoes() {
+        const lista = document.getElementById("listaDevolucoes");
+    
+        try {
+            const resposta = await fetch("/api/devolucoes");
+            const dados = await resposta.json();
+    
+            if (!resposta.ok) {
+                throw new Error(dados.erro || "Não foi possível carregar as devoluções.");
+            }
+    
+            lista.replaceChildren();
+    
+            if (dados.length === 0) {
+                const linha = document.createElement("tr");
+                const celula = document.createElement("td");
+    
+                celula.colSpan = 8;
+                celula.textContent = "Nenhum empréstimo pendente de devolução.";
+    
+                linha.appendChild(celula);
+                lista.appendChild(linha);
+                return;
+            }
+    
+            dados.forEach(item => {
+                const linha = document.createElement("tr");
+    
+                const valores = [
+                    item.id_emprestimo,
+                    item.professor,
+                    item.turma,
+                    item.data_emprestimo,
+                    item.data_prevista_devolucao,
+                    item.equipamentos || "—",
+                    item.status
+                ];
+    
+                valores.forEach(valor => {
+                    const celula = document.createElement("td");
+                    celula.textContent = valor ?? "—";
+                    linha.appendChild(celula);
+                });
+    
+                const celulaAcao = document.createElement("td");
+
+const botao = document.createElement("button");
+botao.type = "button";
+botao.className = "botao-primario";
+botao.textContent = "Registrar devolução";
+
+botao.addEventListener("click", async () => {
+    const confirmar = confirm(
+        `Confirma a devolução de TODOS os ${item.quantidade_equipamentos} equipamento(s) do empréstimo #${item.id_emprestimo}?`
+    );
+
+    if (!confirmar) return;
+
+    botao.disabled = true;
+    botao.textContent = "Registrando...";
+
+    try {
+        const resposta = await fetch(
+            `/api/devolucoes/${item.id_emprestimo}`,
+            { method: "POST" }
+        );
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(resultado.erro || "Erro ao registrar devolução.");
+        }
+
+        alert(resultado.mensagem);
+        await carregarDevolucoes();
+
+    } catch (erro) {
+        alert(erro.message);
+        botao.disabled = false;
+        botao.textContent = "Registrar devolução";
+    }
+});
+
+celulaAcao.appendChild(botao);
+linha.appendChild(celulaAcao);
+    
+                lista.appendChild(linha);
+            });
+    
+        } catch (erro) {
+            lista.replaceChildren();
+    
+            const linha = document.createElement("tr");
+            const celula = document.createElement("td");
+    
+            celula.colSpan = 8;
+            celula.textContent = erro.message;
+    
+            linha.appendChild(celula);
+            lista.appendChild(linha);
+    
+            console.error("Erro ao carregar devoluções:", erro);
+        }
+    }
+    
+    carregarDevolucoes();
+</script>
+</body>
+</html>
+

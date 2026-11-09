@@ -1,0 +1,425 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipamentos | SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sistema.css') }}">
+</head>
+<body>
+    <div class="sige-app">
+
+        <aside class="barra-lateral">
+            <div class="marca-sige">
+                <div class="marca-icone">S</div>
+                <div>
+                    <h1>SIGE</h1>
+                    <p>Gestão de equipamentos</p>
+                </div>
+            </div>
+
+            <p class="menu-titulo">Menu principal</p>
+
+            <nav class="menu-sige">
+                <a href="/painel">
+                    <span class="menu-icone">▦</span>
+                    Painel
+                </a>
+            
+                <a href="/professores">
+                    <span class="menu-icone">♙</span>
+                    Professores
+                </a>
+            
+                <a href="/turmas">
+                    <span class="menu-icone">▤</span>
+                    Turmas
+                </a>
+            
+                <a href="/equipamentos" class="ativo">
+                    <span class="menu-icone">▣</span>
+                    Equipamentos
+                </a>
+            
+                <a href="/emprestimos">
+                    <span class="menu-icone">⇄</span>
+                    Empréstimos
+                </a>
+            
+                <a href="/devolucoes">
+                    <span class="menu-icone">✓</span>
+                    Devoluções
+                </a>
+            
+                <a href="/historico">
+                    <span class="menu-icone">▧</span>
+                    Histórico
+                </a>
+            </nav>
+
+            <div class="lateral-rodape">
+                Escola São Cristóvão<br>
+                Sistema interno da Secretaria
+            </div>
+        </aside>
+
+        <main class="conteudo-sistema">
+
+            <header class="topo-pagina">
+                <div>
+                    <h2>Equipamentos</h2>
+                    <p>Cadastre e acompanhe os equipamentos da escola.</p>
+                </div>
+                <div class="acoes-topo">
+                    <a href="/painel" class="botao-secundario">‹ Voltar ao painel</a>
+                    <a href="/login" class="botao-sair">↪ Sair</a>
+                </div>
+            </header>
+
+            <section class="grade-indicadores">
+                <article class="cartao-indicador marinho">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Total cadastrado</span>
+                        <span class="indicador-icone">▣</span>
+                    </div>
+                    <strong class="indicador-valor" id="totalEquipamentos">0</strong>
+                    <p class="indicador-descricao">Unidades registradas no sistema</p>
+                </article>
+
+                <article class="cartao-indicador">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Disponíveis</span>
+                        <span class="indicador-icone">✓</span>
+                    </div>
+                    <strong class="indicador-valor" id="totalDisponiveis">0</strong>
+                    <p class="indicador-descricao">Prontos para empréstimo</p>
+                </article>
+
+                <article class="cartao-indicador bordo">
+                    <div class="indicador-cabecalho">
+                        <span class="indicador-titulo">Em uso</span>
+                        <span class="indicador-icone">⇄</span>
+                    </div>
+                    <strong class="indicador-valor" id="totalEmprestados">0</strong>
+                    <p class="indicador-descricao">Marcados como emprestados</p>
+                </article>
+            </section>
+
+            <section class="cartao-conteudo">
+                <h3>Cadastrar equipamento</h3>
+                <p class="texto-ajuda">
+                    Cada unidade deve ter seu próprio número de patrimônio.
+                </p>
+
+                <form id="formEquipamento" class="formulario-sige">
+                    <div class="grupo-campo">
+                        <label for="idTipo">Tipo de equipamento *</label>
+                        <select id="idTipo" required>
+                            <option value="">Carregando tipos...</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="patrimonio">Número de patrimônio *</label>
+                        <input
+                            type="text"
+                            id="patrimonio"
+                            maxlength="80"
+                            placeholder="Ex.: TAB-001"
+                            required
+                        >
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="descricao">Descrição</label>
+                        <input
+                            type="text"
+                            id="descricao"
+                            maxlength="255"
+                            placeholder="Ex.: Tablet Samsung"
+                        >
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="observacao">Observações</label>
+                        <textarea
+                            id="observacao"
+                            rows="2"
+                            placeholder="Informações adicionais (opcional)"
+                        ></textarea>
+                    </div>
+
+                    <button type="submit" class="botao-primario" id="botaoCadastrar">
+                        + Cadastrar equipamento
+                    </button>
+                </form>
+
+                <p id="mensagemEquipamento" class="mensagem-status"
+                   role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="secao-sistema">
+                <div class="secao-cabecalho">
+                    <div>
+                        <h3>Equipamentos cadastrados</h3>
+                        <p>Consulte o patrimônio, o tipo e a situação de cada unidade.</p>
+                    </div>
+                    <button type="button" class="botao-secundario" id="botaoAtualizar">
+                        ↻ Atualizar lista
+                    </button>
+                </div>
+
+                <div class="cartao-conteudo">
+                    <div class="formulario-sige" style="margin-bottom: 20px;">
+                        <div class="grupo-campo">
+                            <label for="filtroTipo">Filtrar por tipo</label>
+                            <select id="filtroTipo">
+                                <option value="">Todos os tipos</option>
+                            </select>
+                        </div>
+
+                        <div class="grupo-campo">
+                            <label for="filtroStatus">Filtrar por situação</label>
+                            <select id="filtroStatus">
+                                <option value="">Todas as situações</option>
+                                <option value="DISPONIVEL">Disponível</option>
+                                <option value="EMPRESTADO">Emprestado</option>
+                                <option value="DANIFICADO">Danificado</option>
+                                <option value="MANUTENCAO">Em manutenção</option>
+                                <option value="INATIVO">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <p id="estadoLista" class="estado" role="status" aria-live="polite">
+                        Carregando equipamentos...
+                    </p>
+
+                    <div class="tabela-responsiva" id="areaTabela" hidden>
+                        <table class="tabela-sige">
+                            <thead>
+                                <tr>
+                                    <th>Patrimônio</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaEquipamentos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="rodape-sistema">
+                SIGE — Sistema Integrado de Gestão de Equipamentos · Escola São Cristóvão
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        const formulario = document.getElementById("formEquipamento");
+        const seletorTipo = document.getElementById("idTipo");
+        const patrimonio = document.getElementById("patrimonio");
+        const descricao = document.getElementById("descricao");
+        const observacao = document.getElementById("observacao");
+        const mensagem = document.getElementById("mensagemEquipamento");
+        const botaoCadastrar = document.getElementById("botaoCadastrar");
+        const botaoAtualizar = document.getElementById("botaoAtualizar");
+        const filtroTipo = document.getElementById("filtroTipo");
+        const filtroStatus = document.getElementById("filtroStatus");
+        const estadoLista = document.getElementById("estadoLista");
+        const areaTabela = document.getElementById("areaTabela");
+        const lista = document.getElementById("listaEquipamentos");
+
+        let equipamentos = [];
+
+        const nomesStatus = {
+            DISPONIVEL: "Disponível",
+            EMPRESTADO: "Emprestado",
+            DANIFICADO: "Danificado",
+            MANUTENCAO: "Em manutenção",
+            INATIVO: "Inativo"
+        };
+
+        function mostrarMensagem(texto, tipo) {
+            mensagem.textContent = texto;
+            mensagem.className = "mensagem-status" + (tipo ? " " + tipo : "");
+            mensagem.hidden = false;
+        }
+
+        async function carregarTipos() {
+            const resposta = await fetch("/api/tipos-equipamento");
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(dados.erro || "Não foi possível carregar os tipos.");
+            }
+
+            seletorTipo.replaceChildren();
+            filtroTipo.replaceChildren();
+
+            seletorTipo.add(new Option("Selecione o tipo", ""));
+            filtroTipo.add(new Option("Todos os tipos", ""));
+
+            dados.forEach(tipo => {
+                seletorTipo.add(new Option(tipo.nome, tipo.id_tipo));
+                filtroTipo.add(new Option(tipo.nome, tipo.id_tipo));
+            });
+        }
+
+        function atualizarIndicadores() {
+            document.getElementById("totalEquipamentos").textContent =
+                equipamentos.length;
+
+            document.getElementById("totalDisponiveis").textContent =
+                equipamentos.filter(e => e.status === "DISPONIVEL").length;
+
+            document.getElementById("totalEmprestados").textContent =
+                equipamentos.filter(e => e.status === "EMPRESTADO").length;
+        }
+
+        function exibirEquipamentos() {
+            const tipoSelecionado = filtroTipo.value;
+            const statusSelecionado = filtroStatus.value;
+
+            const filtrados = equipamentos.filter(e => {
+                const tipoCorresponde =
+                    !tipoSelecionado || String(e.id_tipo) === tipoSelecionado;
+
+                const statusCorresponde =
+                    !statusSelecionado || e.status === statusSelecionado;
+
+                return tipoCorresponde && statusCorresponde;
+            });
+
+            lista.replaceChildren();
+
+            if (filtrados.length === 0) {
+                estadoLista.hidden = false;
+                areaTabela.hidden = true;
+                estadoLista.textContent = equipamentos.length === 0
+                    ? "Nenhum equipamento cadastrado. Utilize o formulário acima para adicionar o primeiro."
+                    : "Nenhum equipamento corresponde aos filtros selecionados.";
+                return;
+            }
+
+            filtrados.forEach(e => {
+                const linha = document.createElement("tr");
+                const celulaPatrimonio = document.createElement("td");
+                const celulaTipo = document.createElement("td");
+                const celulaDescricao = document.createElement("td");
+                const celulaStatus = document.createElement("td");
+                const etiqueta = document.createElement("span");
+
+                celulaPatrimonio.textContent = e.numero_patrimonio;
+                celulaTipo.textContent = e.tipo;
+                celulaDescricao.textContent = e.descricao || "—";
+
+                etiqueta.textContent = nomesStatus[e.status] || e.status;
+                etiqueta.className = "badge-status";
+
+                if (e.status === "DANIFICADO" || e.status === "MANUTENCAO") {
+                    etiqueta.classList.add("atrasado");
+                } else if (e.status === "INATIVO") {
+                    etiqueta.classList.add("inativo");
+                }
+
+                celulaStatus.appendChild(etiqueta);
+                linha.append(celulaPatrimonio, celulaTipo, celulaDescricao, celulaStatus);
+                lista.appendChild(linha);
+            });
+
+            estadoLista.hidden = true;
+            areaTabela.hidden = false;
+        }
+
+        async function carregarEquipamentos() {
+            estadoLista.hidden = false;
+            estadoLista.textContent = "Carregando equipamentos...";
+            areaTabela.hidden = true;
+            botaoAtualizar.disabled = true;
+
+            try {
+                const resposta = await fetch("/api/equipamentos");
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Não foi possível carregar os equipamentos.");
+                }
+
+                equipamentos = dados;
+                atualizarIndicadores();
+                exibirEquipamentos();
+            } catch (erro) {
+                estadoLista.textContent = erro.message;
+                areaTabela.hidden = true;
+            } finally {
+                botaoAtualizar.disabled = false;
+            }
+        }
+
+        formulario.addEventListener("submit", async evento => {
+            evento.preventDefault();
+
+            const dados = {
+                id_tipo: seletorTipo.value,
+                numero_patrimonio: patrimonio.value.trim(),
+                descricao: descricao.value.trim(),
+                observacao: observacao.value.trim()
+            };
+
+            if (!dados.id_tipo || !dados.numero_patrimonio) {
+                mostrarMensagem("Preencha o tipo e o número de patrimônio.", "erro");
+                return;
+            }
+
+            botaoCadastrar.disabled = true;
+            botaoCadastrar.textContent = "Cadastrando...";
+            mensagem.hidden = true;
+
+            try {
+                const resposta = await fetch("/api/equipamentos", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(resultado.erro || "Não foi possível cadastrar o equipamento.");
+                }
+
+                mostrarMensagem(resultado.mensagem, "sucesso");
+                formulario.reset();
+
+                await carregarEquipamentos();
+                patrimonio.focus();
+            } catch (erro) {
+                mostrarMensagem(erro.message, "erro");
+            } finally {
+                botaoCadastrar.disabled = false;
+                botaoCadastrar.textContent = "+ Cadastrar equipamento";
+            }
+        });
+
+        botaoAtualizar.addEventListener("click", carregarEquipamentos);
+        filtroTipo.addEventListener("change", exibirEquipamentos);
+        filtroStatus.addEventListener("change", exibirEquipamentos);
+
+        async function iniciarPagina() {
+            try {
+                await carregarTipos();
+                await carregarEquipamentos();
+            } catch (erro) {
+                estadoLista.textContent = erro.message;
+                mostrarMensagem(erro.message, "erro");
+            }
+        }
+
+        iniciarPagina();
+    </script>
+</body>
+</html>

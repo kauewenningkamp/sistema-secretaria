@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empréstimos | SIGE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sistema.css') }}">
+</head>
+<body>
+<div class="sige-app">
+    <aside class="barra-lateral">
+        <div class="marca-sige">
+            <div class="marca-icone">S</div>
+            <div>
+                <h1>SIGE</h1>
+                <p>Gestão de equipamentos</p>
+            </div>
+        </div>
+
+        <p class="menu-titulo">Menu principal</p>
+        <nav class="menu-sige">
+            <a href="/painel"><span class="menu-icone">▦</span>Painel</a>
+            <a href="/professores"><span class="menu-icone">♙</span>Professores</a>
+            <a href="/turmas"><span class="menu-icone">▤</span>Turmas</a>
+            <a href="/equipamentos"><span class="menu-icone">▣</span>Equipamentos</a>
+            <a href="/emprestimos" class="ativo"><span class="menu-icone">⇄</span>Empréstimos</a>
+            <a href="/devolucoes"><span class="menu-icone">✓</span>Devoluções</a>
+            <a href="/historico"><span class="menu-icone">▧</span>Histórico</a>
+        </nav>
+
+        <div class="lateral-rodape">
+            Escola São Cristóvão<br>
+            Sistema interno da Secretaria
+        </div>
+    </aside>
+
+    <main class="conteudo-sistema">
+        <header class="topo-pagina">
+            <div>
+                <h2>Empréstimos</h2>
+                <p>Registre e acompanhe a retirada de equipamentos.</p>
+            </div>
+            <div class="acoes-topo">
+                <a href="/painel" class="botao-secundario">‹ Voltar ao painel</a>
+                <a href="/login" class="botao-sair">↪ Sair</a>
+            </div>
+        </header>
+
+        <section class="cartao-conteudo">
+            <h3>Novo empréstimo</h3>
+            <p class="texto-ajuda">
+                Selecione o professor, a turma, as datas e todos os equipamentos que serão retirados.
+            </p>
+
+            <form id="formEmprestimo" class="formulario-sige">
+                <div class="grupo-campo">
+                    <label for="professor">Professor responsável</label>
+                    <select class="campo-sige" id="professor" required>
+                        <option value="">Carregando professores...</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo">
+                    <label for="turma">Turma</label>
+                    <select class="campo-sige" id="turma" required>
+                        <option value="">Carregando turmas...</option>
+                    </select>
+                </div>
+
+                
+<div class="grupo-campo">
+    <label for="dataEmprestimo">Data e hora da retirada</label>
+    <input
+        class="campo-sige"
+        type="datetime-local"
+        id="dataEmprestimo"
+        min="2020-01-01T00:00"
+        max="2099-12-31T23:59"
+        required
+    >
+</div>
+
+<div class="grupo-campo">
+    <label for="dataPrevista">Devolução prevista</label>
+    <input
+        class="campo-sige"
+        type="datetime-local"
+        id="dataPrevista"
+        min="2020-01-01T00:00"
+        max="2099-12-31T23:59"
+        required
+    >
+</div>
+
+
+                <div class="grupo-campo" style="flex-basis:100%">
+                    <label for="equipamento">Equipamento disponível</label>
+                    <select class="campo-sige" id="equipamento">
+                        <option value="">Carregando equipamentos...</option>
+                    </select>
+                </div>
+
+                <button type="button" class="botao-secundario" id="adicionarEquipamento">
+                    + Adicionar equipamento
+                </button>
+
+                <div style="flex-basis:100%">
+                    <h3>Equipamentos selecionados</h3>
+                    <div class="tabela-responsiva">
+                        <table class="tabela-sige">
+                            <thead>
+                                <tr>
+                                    <th>Patrimônio</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaSelecionados">
+                                <tr>
+                                    <td colspan="4">Nenhum equipamento selecionado.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grupo-campo" style="flex-basis:100%">
+                    <label for="observacao">Observações</label>
+                    <textarea class="campo-sige" id="observacao"
+                              rows="3" placeholder="Observações opcionais"></textarea>
+                </div>
+
+                <p id="mensagemEmprestimo" class="mensagem-status"
+                   role="status" aria-live="polite" hidden></p>
+
+                <button type="submit" class="botao-primario">
+                    Registrar empréstimo
+                </button>
+            </form>
+        </section>
+
+        
+<section class="secao-sistema">
+    <div class="secao-cabecalho">
+        <div>
+            <h3>Empréstimos registrados</h3>
+            <p>Consulte os empréstimos cadastrados no sistema.</p>
+        </div>
+    </div>
+
+    <div class="cartao-conteudo">
+        <div class="tabela-container">
+            <table class="tabela-sige">
+                <thead>
+                    <tr>
+                        <th>Nº</th>
+                        <th>Professor</th>
+                        <th>Turma</th>
+                        <th>Retirada</th>
+                        <th>Devolução prevista</th>
+                        <th>Equipamentos</th>
+                        <th>Quantidade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="listaEmprestimos">
+                    <tr>
+                        <td colspan="8" class="estado">
+                            Carregando empréstimos...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+        <footer class="rodape-sistema">
+            SIGE — Sistema Integrado de Gestão de Equipamentos · Escola São Cristóvão
+        </footer>
+    </main>
+</div>
+
+<script>
+const professor = document.getElementById("professor");
+const turma = document.getElementById("turma");
+const equipamento = document.getElementById("equipamento");
+const selecionados = document.getElementById("listaSelecionados");
+const mensagem = document.getElementById("mensagemEmprestimo");
+const formulario = document.getElementById("formEmprestimo");
+
+const equipamentosEscolhidos = new Map();
+let equipamentosDisponiveis = [];
+
+function mostrarMensagem(texto, tipo) {
+    mensagem.textContent = texto;
+    mensagem.className = "mensagem-status " + (tipo || "");
+    mensagem.hidden = false;
+}
+
+async function carregarOpcoes(url, campo, textoInicial) {
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || "Não foi possível carregar os dados.");
+    }
+
+    campo.replaceChildren(new Option(textoInicial, ""));
+
+    dados.forEach(item => {
+        const option = new Option(item.nome, item.id_professor ?? item.id_turma);
+        campo.add(option);
+    });
+}
+
+async function carregarProfessores() {
+    await carregarOpcoes(
+        "/api/professores",
+        professor,
+        "Selecione um professor"
+    );
+
+    [...professor.options].forEach(option => {
+        if (option.value && option.text) {
+            // A API já retorna apenas os dados dos professores cadastrados.
+        }
+    });
+}
+
+async function carregarTurmas() {
+    const resposta = await fetch("/api/turmas");
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || "Não foi possível carregar as turmas.");
+    }
+
+    turma.replaceChildren(new Option("Selecione uma turma", ""));
+
+    dados.filter(item => item.ativa === true || item.ativa === 1).forEach(item => {
+        turma.add(new Option(item.nome, item.id_turma));
+    });
+}
+
+async function carregarEquipamentos() {
+    const resposta = await fetch("/api/equipamentos");
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || "Não foi possível carregar os equipamentos.");
+    }
+
+    equipamentosDisponiveis = dados.filter(item => item.status === "DISPONIVEL");
+    atualizarOpcoesEquipamentos();
+}
+
+function atualizarOpcoesEquipamentos() {
+    equipamento.replaceChildren(
+        new Option("Selecione um equipamento disponível", "")
+    );
+
+    equipamentosDisponiveis
+        .filter(item => !equipamentosEscolhidos.has(String(item.id_equipamento)))
+        .forEach(item => {
+            const identificacao = item.numero_patrimonio;
+            const descricao = item.descricao ? " — " + item.descricao : "";
+            equipamento.add(new Option(
+                `${identificacao} — ${item.tipo}${descricao}`,
+                item.id_equipamento
+            ));
+        });
+}
+
+function desenharSelecionados() {
+    selecionados.replaceChildren();
+
+    if (equipamentosEscolhidos.size === 0) {
+        const linha = document.createElement("tr");
+        const celula = document.createElement("td");
+        celula.colSpan = 4;
+        celula.textContent = "Nenhum equipamento selecionado.";
+        linha.appendChild(celula);
+        selecionados.appendChild(linha);
+        return;
+    }
+
+    equipamentosEscolhidos.forEach(item => {
+        const linha = document.createElement("tr");
+
+        [item.numero_patrimonio, item.tipo, item.descricao || "—"].forEach(valor => {
+            const celula = document.createElement("td");
+            celula.textContent = valor;
+            linha.appendChild(celula);
+        });
+
+        const celulaAcao = document.createElement("td");
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "botao-secundario";
+        botao.textContent = "Remover";
+        botao.addEventListener("click", () => {
+            equipamentosEscolhidos.delete(String(item.id_equipamento));
+            atualizarOpcoesEquipamentos();
+            desenharSelecionados();
+        });
+
+        celulaAcao.appendChild(botao);
+        linha.appendChild(celulaAcao);
+        selecionados.appendChild(linha);
+    });
+}
+
+document.getElementById("adicionarEquipamento").addEventListener("click", () => {
+    const id = equipamento.value;
+
+    if (!id) {
+        mostrarMensagem("Selecione um equipamento disponível.", "erro");
+        return;
+    }
+
+    const item = equipamentosDisponiveis.find(
+        equipamentoItem => String(equipamentoItem.id_equipamento) === id
+    );
+
+    if (!item) {
+        mostrarMensagem("Esse equipamento não está disponível.", "erro");
+        return;
+    }
+
+    equipamentosEscolhidos.set(id, item);
+    atualizarOpcoesEquipamentos();
+    desenharSelecionados();
+    mensagem.hidden = true;
+});
+
+
+formulario.addEventListener("submit", async evento => {
+    evento.preventDefault();
+
+    if (!professor.value || !turma.value) {
+        mostrarMensagem("Selecione o professor e a turma.", "erro");
+        return;
+    }
+
+    if (equipamentosEscolhidos.size === 0) {
+        mostrarMensagem("Adicione pelo menos um equipamento.", "erro");
+        return;
+    }
+
+    const inicio = document.getElementById("dataEmprestimo").value;
+const fim = document.getElementById("dataPrevista").value;
+    
+    const agora = new Date();
+const dataLocal = new Date(
+    agora.getTime() - agora.getTimezoneOffset() * 60000
+).toISOString().slice(0, 16);
+
+if (!inicio || !fim) {
+    mostrarMensagem("Preencha as duas datas.", "erro");
+    return;
+}
+
+if (inicio < dataLocal) {
+    mostrarMensagem(
+        "A data da retirada não pode estar no passado.",
+        "erro"
+    );
+    return;
+}
+
+if (fim <= inicio) {
+    mostrarMensagem(
+        "A devolução prevista deve ser posterior à retirada.",
+        "erro"
+    );
+    return;
+}
+    const botaoRegistrar = formulario.querySelector(
+        'button[type="submit"]'
+    );
+    const textoOriginal = botaoRegistrar.textContent;
+
+    const dadosEmprestimo = {
+        id_professor: Number(professor.value),
+        id_turma: Number(turma.value),
+        ids_equipamentos: [...equipamentosEscolhidos.keys()].map(Number),
+        data_emprestimo: inicio,
+        data_prevista_devolucao: fim,
+        observacao: document.getElementById("observacao").value.trim()
+    };
+
+    botaoRegistrar.disabled = true;
+    botaoRegistrar.textContent = "Registrando...";
+
+    try {
+        const resposta = await fetch("/api/emprestimos", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(dadosEmprestimo)
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                resultado.erro || "Não foi possível registrar o empréstimo."
+            );
+        }
+
+        mostrarMensagem(
+            `Empréstimo #${resultado.id_emprestimo} registrado com sucesso. ` +
+            `${resultado.quantidade_equipamentos} equipamento(s) emprestado(s).`,
+            "sucesso"
+        );
+
+        formulario.reset();
+        equipamentosEscolhidos.clear();
+        desenharSelecionados();
+
+        await carregarEquipamentos();
+
+    } catch (erro) {
+        mostrarMensagem(erro.message, "erro");
+    } finally {
+        botaoRegistrar.disabled = false;
+        botaoRegistrar.textContent = textoOriginal;
+    }
+});
+
+
+async function carregarEmprestimos() {
+    const lista = document.getElementById("listaEmprestimos");
+
+    try {
+        const resposta = await fetch("/api/emprestimos");
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                dados.erro || "Não foi possível carregar os empréstimos."
+            );
+        }
+
+        lista.replaceChildren();
+
+        if (dados.length === 0) {
+            const linha = document.createElement("tr");
+            const celula = document.createElement("td");
+
+            celula.colSpan = 8;
+            celula.textContent = "Nenhum empréstimo registrado.";
+
+            linha.appendChild(celula);
+            lista.appendChild(linha);
+            return;
+        }
+
+        dados.forEach(item => {
+            const linha = document.createElement("tr");
+
+            const valores = [
+                item.id_emprestimo,
+                item.professor,
+                item.turma,
+                item.data_emprestimo,
+                item.data_prevista_devolucao,
+                item.equipamentos || "—",
+                item.quantidade_equipamentos,
+                item.status
+            ];
+
+            valores.forEach(valor => {
+                const celula = document.createElement("td");
+                celula.textContent = valor ?? "—";
+                linha.appendChild(celula);
+            });
+
+            lista.appendChild(linha);
+        });
+
+    } catch (erro) {
+        lista.replaceChildren();
+
+        const linha = document.createElement("tr");
+        const celula = document.createElement("td");
+
+        celula.colSpan = 8;
+        celula.textContent = erro.message;
+
+        linha.appendChild(celula);
+        lista.appendChild(linha);
+
+        console.error("Erro ao carregar empréstimos:", erro);
+    }
+}
+ 
+
+async function iniciarPagina() {
+    try {
+        await carregarProfessores();
+        await carregarTurmas();
+        await carregarEquipamentos();
+        await carregarEmprestimos();
+    } catch (erro) {
+        mostrarMensagem(erro.message, "erro");
+    }
+}
+
+iniciarPagina();
+</script>
+</body>
+</html>
