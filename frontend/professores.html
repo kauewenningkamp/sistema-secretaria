@@ -127,6 +127,7 @@
                                 <tr>
                                     <th>Nome do professor</th>
                                     <th>Situação</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="listaProfessores"></tbody>
@@ -158,6 +159,46 @@
             mensagem.hidden = false;
         }
 
+
+async function alterarStatusProfessor(professor) {
+    const novoStatus = !professor.ativo;
+
+    const acao = novoStatus ? "reativar" : "desativar";
+
+    const confirmar = window.confirm(
+        `Deseja realmente ${acao} o professor ${professor.nome}?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const resposta = await fetch(
+            `/api/professores/${professor.id_professor}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    ativo: novoStatus
+                })
+            }
+        );
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(resultado.erro || "Não foi possível alterar a situação.");
+        }
+
+        mostrarMensagem(resultado.mensagem, "sucesso");
+        await carregarProfessores();
+
+    } catch (erro) {
+        mostrarMensagem(erro.message, "erro");
+    }
+}
+
         async function carregarProfessores() {
             estadoLista.hidden = false;
             estadoLista.textContent = "Carregando professores...";
@@ -179,23 +220,36 @@
                     return;
                 }
 
-                dados.forEach(professor => {
-                    const linha = document.createElement("tr");
-                    const celulaNome = document.createElement("td");
-                    const celulaSituacao = document.createElement("td");
-                    const etiqueta = document.createElement("span");
+              
+dados.forEach(professor => {
+    const linha = document.createElement("tr");
+    const celulaNome = document.createElement("td");
+    const celulaSituacao = document.createElement("td");
+    const celulaAcoes = document.createElement("td");
+    const etiqueta = document.createElement("span");
 
-                    celulaNome.textContent = professor.nome;
+    celulaNome.textContent = professor.nome;
 
-                    etiqueta.textContent = professor.ativo ? "Ativo" : "Inativo";
-                    etiqueta.className = professor.ativo
-                        ? "badge-status"
-                        : "badge-status inativo";
+    etiqueta.textContent = professor.ativo ? "Ativo" : "Inativo";
+    etiqueta.className = professor.ativo
+        ? "badge-status"
+        : "badge-status inativo";
 
-                    celulaSituacao.appendChild(etiqueta);
-                    linha.append(celulaNome, celulaSituacao);
-                    lista.appendChild(linha);
-                });
+    celulaSituacao.appendChild(etiqueta);
+
+    const botaoAlterar = document.createElement("button");
+    botaoAlterar.type = "button";
+    botaoAlterar.className = "botao-secundario";
+    botaoAlterar.textContent = professor.ativo ? "Desativar" : "Reativar";
+
+    botaoAlterar.addEventListener("click", () => alterarStatusProfessor(professor));
+
+    celulaAcoes.appendChild(botaoAlterar);
+
+    linha.append(celulaNome, celulaSituacao, celulaAcoes);
+    lista.appendChild(linha);
+});
+
 
                 estadoLista.hidden = true;
                 areaTabela.hidden = false;

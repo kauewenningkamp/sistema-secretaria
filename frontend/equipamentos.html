@@ -204,6 +204,7 @@
                                     <th>Tipo</th>
                                     <th>Descrição</th>
                                     <th>Situação</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="listaEquipamentos"></tbody>
@@ -305,35 +306,143 @@
                 return;
             }
 
-            filtrados.forEach(e => {
-                const linha = document.createElement("tr");
-                const celulaPatrimonio = document.createElement("td");
-                const celulaTipo = document.createElement("td");
-                const celulaDescricao = document.createElement("td");
-                const celulaStatus = document.createElement("td");
-                const etiqueta = document.createElement("span");
+          
+filtrados.forEach(e => {
+    const linha = document.createElement("tr");
+    const celulaPatrimonio = document.createElement("td");
+    const celulaTipo = document.createElement("td");
+    const celulaDescricao = document.createElement("td");
+    const celulaStatus = document.createElement("td");
+    const celulaAcoes = document.createElement("td");
+    const etiqueta = document.createElement("span");
 
-                celulaPatrimonio.textContent = e.numero_patrimonio;
-                celulaTipo.textContent = e.tipo;
-                celulaDescricao.textContent = e.descricao || "—";
+    celulaPatrimonio.textContent = e.numero_patrimonio;
+    celulaTipo.textContent = e.tipo;
+    celulaDescricao.textContent = e.descricao || "—";
 
-                etiqueta.textContent = nomesStatus[e.status] || e.status;
-                etiqueta.className = "badge-status";
+    etiqueta.textContent = nomesStatus[e.status] || e.status;
+    etiqueta.className = "badge-status";
 
-                if (e.status === "DANIFICADO" || e.status === "MANUTENCAO") {
-                    etiqueta.classList.add("atrasado");
-                } else if (e.status === "INATIVO") {
-                    etiqueta.classList.add("inativo");
-                }
+    if (e.status === "DANIFICADO" || e.status === "MANUTENCAO") {
+        etiqueta.classList.add("atrasado");
+    } else if (e.status === "INATIVO") {
+        etiqueta.classList.add("inativo");
+    }
 
-                celulaStatus.appendChild(etiqueta);
-                linha.append(celulaPatrimonio, celulaTipo, celulaDescricao, celulaStatus);
-                lista.appendChild(linha);
-            });
+    celulaStatus.appendChild(etiqueta);
+
+    const botaoAlterar = document.createElement("button");
+    botaoAlterar.type = "button";
+    botaoAlterar.textContent = "Alterar situação";
+    botaoAlterar.className = "botao-secundario";
+
+    if (e.status === "EMPRESTADO") {
+        botaoAlterar.disabled = true;
+        botaoAlterar.textContent = "Em uso";
+    } else {
+        botaoAlterar.addEventListener("click", () => alterarStatus(e));
+    }
+
+    celulaAcoes.appendChild(botaoAlterar);
+
+    linha.append(
+        celulaPatrimonio,
+        celulaTipo,
+        celulaDescricao,
+        celulaStatus,
+        celulaAcoes
+    );
+
+    lista.appendChild(linha);
+});
+
 
             estadoLista.hidden = true;
             areaTabela.hidden = false;
         }
+
+       
+       
+
+        async function alterarStatus(equipamento) {
+    const opcoes = [
+        { valor: "DISPONIVEL", texto: "Disponível" },
+        { valor: "DANIFICADO", texto: "Danificado" },
+        { valor: "MANUTENCAO", texto: "Em manutenção" },
+        { valor: "INATIVO", texto: "Inativo" }
+    ];
+
+    const celula = [...lista.querySelectorAll("tr")]
+        .find(linha => linha.cells[0].textContent === equipamento.numero_patrimonio)
+        ?.cells[4];
+
+    if (!celula) return;
+
+    celula.replaceChildren();
+
+    const seletor = document.createElement("select");
+    seletor.className = "campo-sige";
+
+    opcoes.forEach(opcao => {
+        const item = new Option(opcao.texto, opcao.valor);
+        seletor.add(item);
+    });
+
+    seletor.value = equipamento.status;
+
+    const botaoSalvar = document.createElement("button");
+    botaoSalvar.type = "button";
+    botaoSalvar.textContent = "Salvar";
+    botaoSalvar.className = "botao-primario";
+
+    const botaoCancelar = document.createElement("button");
+    botaoCancelar.type = "button";
+    botaoCancelar.textContent = "Cancelar";
+    botaoCancelar.className = "botao-secundario";
+
+    celula.append(seletor, botaoSalvar, botaoCancelar);
+
+    botaoCancelar.addEventListener("click", exibirEquipamentos);
+
+    botaoSalvar.addEventListener("click", async () => {
+        const novoStatus = seletor.value;
+
+        if (novoStatus === equipamento.status) {
+            exibirEquipamentos();
+            return;
+        }
+
+        botaoSalvar.disabled = true;
+        botaoSalvar.textContent = "Salvando...";
+
+        try {
+            const resposta = await fetch(
+                `/api/equipamentos/${equipamento.id_equipamento}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ status: novoStatus })
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(resultado.erro || "Erro ao atualizar situação.");
+            }
+
+            mostrarMensagem(resultado.mensagem, "sucesso");
+            await carregarEquipamentos();
+
+        } catch (erro) {
+            mostrarMensagem(erro.message, "erro");
+            await carregarEquipamentos();
+        }
+    });
+}
+
 
         async function carregarEquipamentos() {
             estadoLista.hidden = false;

@@ -97,6 +97,78 @@ def login():
             cursor.close()
         banco.close()
 
+   
+@app.route("/api/equipamentos/<int:id_equipamento>/status", methods=["PATCH"])
+def atualizar_status_equipamento(id_equipamento):
+    if not session.get("usuario_id"):
+        return jsonify({"erro": "Faça login para continuar."}), 401
+
+    dados = request.get_json(silent=True) or {}
+    novo_status = dados.get("status", "").strip().upper()
+
+    status_permitidos = {
+        "DISPONIVEL",
+        "DANIFICADO",
+        "MANUTENCAO",
+        "INATIVO"
+    }
+
+    if novo_status not in status_permitidos:
+        return jsonify({"erro": "Selecione uma situação válida."}), 400
+
+    banco = conectar()
+    if banco is None:
+        return jsonify({"erro": "Falha na conexão com o banco."}), 500
+
+    cursor = None
+
+    try:
+        cursor = banco.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT id_equipamento, status
+            FROM equipamentos
+            WHERE id_equipamento = %s
+            FOR UPDATE
+        """, (id_equipamento,))
+
+        equipamento = cursor.fetchone()
+
+        if equipamento is None:
+            banco.rollback()
+            return jsonify({"erro": "Equipamento não encontrado."}), 404
+
+        if equipamento["status"] == "EMPRESTADO":
+            banco.rollback()
+            return jsonify({
+                "erro": "Não é possível alterar a situação de um equipamento emprestado."
+            }), 409
+
+        cursor.execute("""
+            UPDATE equipamentos
+            SET status = %s
+            WHERE id_equipamento = %s
+        """, (novo_status, id_equipamento))
+
+        banco.commit()
+
+        return jsonify({
+            "mensagem": "Situação do equipamento atualizada com sucesso.",
+            "status": novo_status
+        })
+
+    except Exception:
+        banco.rollback()
+        app.logger.exception("Erro ao atualizar situação do equipamento")
+        return jsonify({
+            "erro": "Não foi possível atualizar a situação do equipamento."
+        }), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        banco.close()
+     
 
 @app.route("/teste-banco")
 def teste_banco():
@@ -184,6 +256,66 @@ def cadastrar_professor():
         if cursor is not None:
             cursor.close()
         banco.close()
+
+
+@app.route("/api/professores/<int:id_professor>/status", methods=["PATCH"])
+def atualizar_status_professor(id_professor):
+    if not session.get("usuario_id"):
+        return jsonify({"erro": "Faça login para continuar."}), 401
+
+    dados = request.get_json(silent=True) or {}
+    novo_status = dados.get("ativo")
+
+    if not isinstance(novo_status, bool):
+        return jsonify({"erro": "Informe uma situação válida."}), 400
+
+    banco = conectar()
+    if banco is None:
+        return jsonify({"erro": "Falha na conexão com o banco."}), 500
+
+    cursor = None
+
+    try:
+        cursor = banco.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT id_professor
+            FROM professores
+            WHERE id_professor = %s
+            FOR UPDATE
+        """, (id_professor,))
+
+        professor = cursor.fetchone()
+
+        if professor is None:
+            banco.rollback()
+            return jsonify({"erro": "Professor não encontrado."}), 404
+
+        cursor.execute("""
+            UPDATE professores
+            SET ativo = %s
+            WHERE id_professor = %s
+        """, (novo_status, id_professor))
+
+        banco.commit()
+
+        return jsonify({
+            "mensagem": "Situação do professor atualizada com sucesso.",
+            "ativo": novo_status
+        })
+
+    except Exception:
+        banco.rollback()
+        app.logger.exception("Erro ao atualizar situação do professor")
+        return jsonify({
+            "erro": "Não foi possível atualizar a situação do professor."
+        }), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        banco.close()
+
 
 @app.route("/professores")
 def pagina_professores():
@@ -436,9 +568,9 @@ def listar_turmas():
         return jsonify({"erro": "Não foi possível listar as turmas."}), 500
 
     finally:
-        if cursor is not None:
-            cursor.close()
-        banco.close()
+     if cursor is not None:
+        cursor.close()
+     banco.close()
 
 
 @app.route("/api/turmas", methods=["POST"])
@@ -489,6 +621,65 @@ def cadastrar_turma():
         banco.rollback()
         app.logger.exception("Erro ao cadastrar turma")
         return jsonify({"erro": "Não foi possível cadastrar a turma."}), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        banco.close()
+
+
+@app.route("/api/turmas/<int:id_turma>/status", methods=["PATCH"])
+def atualizar_status_turma(id_turma):
+    if not session.get("usuario_id"):
+        return jsonify({"erro": "Faça login para continuar."}), 401
+
+    dados = request.get_json(silent=True) or {}
+    novo_status = dados.get("ativa")
+
+    if not isinstance(novo_status, bool):
+        return jsonify({"erro": "Informe uma situação válida."}), 400
+
+    banco = conectar()
+    if banco is None:
+        return jsonify({"erro": "Falha na conexão com o banco."}), 500
+
+    cursor = None
+
+    try:
+        cursor = banco.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT id_turma
+            FROM turmas
+            WHERE id_turma = %s
+            FOR UPDATE
+        """, (id_turma,))
+
+        turma = cursor.fetchone()
+
+        if turma is None:
+            banco.rollback()
+            return jsonify({"erro": "Turma não encontrada."}), 404
+
+        cursor.execute("""
+            UPDATE turmas
+            SET ativa = %s
+            WHERE id_turma = %s
+        """, (novo_status, id_turma))
+
+        banco.commit()
+
+        return jsonify({
+            "mensagem": "Situação da turma atualizada com sucesso.",
+            "ativa": novo_status
+        })
+
+    except Exception:
+        banco.rollback()
+        app.logger.exception("Erro ao atualizar situação da turma")
+        return jsonify({
+            "erro": "Não foi possível atualizar a situação da turma."
+        }), 500
 
     finally:
         if cursor is not None:

@@ -167,6 +167,7 @@
                                     <th>Curso</th>
                                     <th>Período</th>
                                     <th>Situação</th>
+                                    <th>Ações</th>  
                                 </tr>
                             </thead>
                             <tbody id="listaTurmas"></tbody>
@@ -201,6 +202,50 @@
             mensagem.hidden = false;
         }
 
+        
+        
+async function alterarStatusTurma(turma) {
+    const turmaAtiva = turma.ativa === true || turma.ativa === 1;
+    const novoStatus = !turmaAtiva;
+
+    const acao = novoStatus ? "reativar" : "desativar";
+
+    const confirmar = window.confirm(
+        `Deseja realmente ${acao} a turma ${turma.nome}?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const resposta = await fetch(
+            `/api/turmas/${turma.id_turma}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    ativa: novoStatus
+                })
+            }
+        );
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                resultado.erro || "Não foi possível alterar a situação da turma."
+            );
+        }
+
+        mostrarMensagem(resultado.mensagem, "sucesso");
+        await carregarTurmas();
+
+    } catch (erro) {
+        mostrarMensagem(erro.message, "erro");
+    }
+}
+
         async function carregarTurmas() {
             estadoLista.hidden = false;
             estadoLista.textContent = "Carregando turmas...";
@@ -229,29 +274,42 @@
                     return;
                 }
 
-                turmas.forEach(turma => {
-                    const linha = document.createElement("tr");
-                    const nome = document.createElement("td");
-                    const curso = document.createElement("td");
-                    const periodo = document.createElement("td");
-                    const situacao = document.createElement("td");
-                    const etiqueta = document.createElement("span");
+              
+turmas.forEach(turma => {
+    const linha = document.createElement("tr");
+    const nome = document.createElement("td");
+    const curso = document.createElement("td");
+    const periodo = document.createElement("td");
+    const situacao = document.createElement("td");
+    const acoes = document.createElement("td");
+    const etiqueta = document.createElement("span");
 
-                    nome.textContent = turma.nome;
-                    curso.textContent = turma.curso || "—";
-                    periodo.textContent = turma.periodo || "—";
-                    etiqueta.textContent =
-                        (turma.ativa === true || turma.ativa === 1) ? "Ativa" : "Inativa";
-                    etiqueta.className = "badge-status";
+    const turmaAtiva = turma.ativa === true || turma.ativa === 1;
 
-                    if (!(turma.ativa === true || turma.ativa === 1)) {
-                        etiqueta.classList.add("inativo");
-                    }
+    nome.textContent = turma.nome;
+    curso.textContent = turma.curso || "—";
+    periodo.textContent = turma.periodo || "—";
 
-                    situacao.appendChild(etiqueta);
-                    linha.append(nome, curso, periodo, situacao);
-                    lista.appendChild(linha);
-                });
+    etiqueta.textContent = turmaAtiva ? "Ativa" : "Inativa";
+    etiqueta.className = turmaAtiva
+        ? "badge-status"
+        : "badge-status inativo";
+
+    situacao.appendChild(etiqueta);
+
+    const botaoAlterar = document.createElement("button");
+    botaoAlterar.type = "button";
+    botaoAlterar.className = "botao-secundario";
+    botaoAlterar.textContent = turmaAtiva ? "Desativar" : "Reativar";
+
+    botaoAlterar.addEventListener("click", () => alterarStatusTurma(turma));
+
+    acoes.appendChild(botaoAlterar);
+
+    linha.append(nome, curso, periodo, situacao, acoes);
+    lista.appendChild(linha);
+});
+
 
                 estadoLista.hidden = true;
                 areaTabela.hidden = false;
