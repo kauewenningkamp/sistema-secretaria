@@ -218,17 +218,22 @@ async function carregarOpcoes(url, campo, textoInicial) {
 }
 
 async function carregarProfessores() {
-    await carregarOpcoes(
-        "/api/professores",
-        professor,
-        "Selecione um professor"
+    const resposta = await fetch("/api/professores");
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || "Não foi possível carregar os professores.");
+    }
+
+    professor.replaceChildren(
+        new Option("Selecione um professor", "")
     );
 
-    [...professor.options].forEach(option => {
-        if (option.value && option.text) {
-            // A API já retorna apenas os dados dos professores cadastrados.
-        }
-    });
+    dados
+        .filter(item => item.ativo === true || item.ativo === 1)
+        .forEach(item => {
+            professor.add(new Option(item.nome, item.id_professor));
+        });
 }
 
 async function carregarTurmas() {
