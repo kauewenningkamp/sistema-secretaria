@@ -369,9 +369,14 @@ if (!inicio || !fim) {
     return;
 }
 
-if (inicio < dataLocal) {
+
+const limiteAtraso = new Date(
+    agora.getTime() - 30 * 60 * 1000 - agora.getTimezoneOffset() * 60000
+).toISOString().slice(0, 16);
+
+if (inicio < limiteAtraso) {
     mostrarMensagem(
-        "A data da retirada não pode estar no passado.",
+        "A retirada não pode estar mais de 30 minutos no passado.",
         "erro"
     );
     return;

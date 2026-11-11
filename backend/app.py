@@ -948,6 +948,7 @@ def cadastrar_emprestimo():
         banco.close()
 
 
+
 @app.route("/api/devolucoes/<int:id_emprestimo>", methods=["POST"])
 def registrar_devolucao(id_emprestimo):
     if not session.get("usuario_id"):
@@ -965,8 +966,11 @@ def registrar_devolucao(id_emprestimo):
 
         # Bloqueia o empréstimo durante a devolução.
         cursor.execute("""
-            SELECT id_emprestimo, status, data_devolucao
-            FROM emprestimos
+            SELECT
+    id_emprestimo,
+    status,
+    data_devolucao
+FROM emprestimos
             WHERE id_emprestimo = %s
             FOR UPDATE
         """, (id_emprestimo,))
@@ -979,11 +983,18 @@ def registrar_devolucao(id_emprestimo):
 
         if emprestimo["status"] not in ("ATIVO", "ATRASADO") or emprestimo["data_devolucao"] is not None:
             banco.rollback()
-            return jsonify({"erro": "Este empréstimo já foi devolvido ou não está disponível."}), 409
+            return jsonify({
+                "erro": "Este empréstimo já foi devolvido ou não está disponível."
+            }), 409
+
+       
 
         # Busca e bloqueia todos os equipamentos do empréstimo.
         cursor.execute("""
-            SELECT ie.id_equipamento, ie.status_item, eq.status AS status_equipamento
+            SELECT
+                ie.id_equipamento,
+                ie.status_item,
+                eq.status AS status_equipamento
             FROM itens_emprestimo ie
             INNER JOIN equipamentos eq
                 ON eq.id_equipamento = ie.id_equipamento
@@ -1049,6 +1060,7 @@ def registrar_devolucao(id_emprestimo):
         if cursor is not None:
             cursor.close()
         banco.close()
+
 @app.route("/api/devolucoes", methods=["GET"])
 def listar_devolucoes():
     if not session.get("usuario_id"):
